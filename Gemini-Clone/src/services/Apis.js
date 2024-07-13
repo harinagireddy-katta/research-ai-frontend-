@@ -14,6 +14,10 @@ export const saveUserdata = async (data) => {
   return await commonrequest("POST", `${BACKEND_URL}/savedata`, data)
 }
 
+export const getData = async(data) =>{
+  return await commonrequest("POST", `${BACKEND_URL}/sendData`, data)
+}
+
 export const userVerify = (data) => {
     return fetch(`${BACKEND_URL}/signin`, {
       method: 'POST',
