@@ -18,6 +18,10 @@ export const getData = async(data) =>{
   return await commonrequest("POST", `${BACKEND_URL}/sendData`, data)
 }
 
+export const getAnswer = async(data) => {
+  return await commonrequest("POST", `${BACKEND_URL}/getRes`, data)
+}
+
 export const userVerify = (data) => {
     return fetch(`${BACKEND_URL}/signin`, {
       method: 'POST',

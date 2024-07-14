@@ -10,6 +10,7 @@ router.post("/signup", controllers.userregister);
 router.post("/otp", controllers.userOtpSend);
 router.post("/savedata", datacon.UserData);
 router.post("/sendData", datacon.getData);
+router.post("/getRes", datacon.query);
 
 // Middleware setup
 router.use(fileUpload());
