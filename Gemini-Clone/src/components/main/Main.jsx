@@ -548,7 +548,7 @@ import { Context } from "../../context/Context";
 import { useLogout } from "../login/logout";
 import { useAuthContext } from "../../reducer/useAuthContext";
 import { toast, ToastContainer } from 'react-toastify';
-import { getAnswer } from '../../services/Apis'; 
+import { getAnswer, saveAnswer } from '../../services/Apis'; // Updated to include saveAnswer
 import { uploadPdf, saveUserdata } from '../../services/Apis';
 
 const Dropdown = ({ handleLogoutClick }) => {
@@ -647,6 +647,20 @@ const Main = () => {
         }
     };
 
+    const handleSaveClick = async (qa) => {
+        try {
+            const response = await saveAnswer({
+                email: user.email,
+                // question: qa.question,
+                answer: qa.answer
+            });
+            toast.success('Answer saved successfully');
+        } catch (error) {
+            console.error('Error saving answer:', error);
+            toast.error('Error saving answer');
+        }
+    };
+
     const handleCardClick = (promptText) => {
         setMainInput(promptText);
     };
@@ -666,6 +680,24 @@ const Main = () => {
                     <p>INPUT YOUR LINK</p>
                 </div>
                 <div className="main-bottom">
+                    {showResults && (
+                        <div className="main-bottom">
+                            {qaList.map((qa, index) => (
+                                <div key={index} className="result">
+                                    <div className="result-title">
+                                        <img src={assets.user} alt="User" />
+                                        <p>Recent Prompt</p>
+                                    </div>
+                                    <div className="result-data">
+                                        <img src={assets.gemini_icon} alt="Gemini" />
+                                        <p>{qa.question}</p> 
+                                        <p>{qa.answer}</p>
+                                        <button onClick={() => handleSaveClick(qa)}>Save</button> 
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                     <div className="search-box">
                         <input
                             onChange={(e) => setMainInput(e.target.value)}
@@ -686,23 +718,6 @@ const Main = () => {
                             onChange={handleUpload}
                         />
                     </div>
-                    {showResults && (
-                        <div className="main-bottom">
-                            {qaList.map((qa, index) => (
-                                <div key={index} className="result">
-                                    <div className="result-title">
-                                        <img src={assets.user} alt="User" />
-                                        <p>Recent Prompt</p>
-                                    </div>
-                                    <div className="result-data">
-                                        <img src={assets.gemini_icon} alt="Gemini" />
-                                        <p>{qa.question}</p> 
-                                        <p>{qa.answer}</p> 
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
                 </div>
             </div>
             {isModalOpen && (

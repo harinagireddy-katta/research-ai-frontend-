@@ -1,4 +1,5 @@
 const userdata = require("../schema/userData");
+const userAns = require("../schema/saveans");
 const mongoose = require("mongoose");
 
 exports.UserData = async (req,res) => {
@@ -31,15 +32,6 @@ exports.getData = async (req,res) => {
     }
 };
 
-// exports.query = async(req,res)=>{
-//     const {name, query} = req.body;
-//     if (!query)
-//     {
-//         res.status(400).send({error:"Send the text"});
-//     }
-//     const answer = "hello";
-//     res.json(answer);
-// }
 exports.query = async (req, res) => {
     try {
         const { name, query } = req.body;
@@ -54,5 +46,17 @@ exports.query = async (req, res) => {
     } catch (error) {
         console.error("Error in query handler:", error);
         res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+exports.saveAns = async(req,res) =>{
+    try {
+        const { email, answer } = req.body;
+        const newAnswer = new userAns({ email, answer });
+        await newAnswer.save();
+        res.status(200).json({ message: 'Answer saved successfully' });
+    } catch (error) {
+        console.error('Error saving answer:', error);
+        res.status(500).json({ message: 'Error saving answer' });
     }
 };

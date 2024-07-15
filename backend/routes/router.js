@@ -11,6 +11,7 @@ router.post("/otp", controllers.userOtpSend);
 router.post("/savedata", datacon.UserData);
 router.post("/sendData", datacon.getData);
 router.post("/getRes", datacon.query);
+router.post("/saveAnswer", datacon.saveAns);
 
 // Middleware setup
 router.use(fileUpload());
