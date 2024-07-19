@@ -635,12 +635,13 @@ const Main = () => {
             return; 
         }
         try {
-            const data = { name: user.email, query: mainInput }; 
+            const data = { username: "Sathvik", query: mainInput }; 
             const response = await getAnswer(data); 
+            console.log(response.data.answer);
             const newQa = { question: mainInput, answer: response.data.answer };
             setQaList([...qaList, newQa]); 
             setAnswer(response.data.answer); 
-            setShowResults(true); 
+           setShowResults(true); 
             setMainInput(""); 
         } catch (error) {
             console.error('Error getting answer:', error.response ? error.response.data : error.message);

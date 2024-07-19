@@ -1,6 +1,7 @@
 const userdata = require("../schema/userData");
 const userAns = require("../schema/saveans");
 const mongoose = require("mongoose");
+const axios = require('axios');
 
 exports.UserData = async (req,res) => {
     const {email, data} = req.body;
@@ -34,15 +35,20 @@ exports.getData = async (req,res) => {
 
 exports.query = async (req, res) => {
     try {
-        const { name, query } = req.body;
-        if (!name || !query) {
+        const { username, query } = req.body;
+        if (!username || !query) {
             return res.status(400).json({ error: "Both name and query must be provided" });
         }
         
         // Process your logic here
         
-        const answer = "hello";
-        res.json({ answer });
+        //const answer = "hello";
+        const response = await axios.post('http://192.168.244.40:5100/getResponse', {username, query});
+        const answer = response.data.message; 
+        console.log(answer);
+        console.log(answer);
+        //res.end( JSON.stringify(answer.message) );
+        res.json({answer});
     } catch (error) {
         console.error("Error in query handler:", error);
         res.status(500).json({ error: "Internal server error" });
