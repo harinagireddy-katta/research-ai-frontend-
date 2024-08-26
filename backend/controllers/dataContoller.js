@@ -7,11 +7,15 @@ exports.UserData = async (req,res) => {
     const {email, data} = req.body;
     
     try {
+        const response = await axios.post('http://0.0.0.0:5300/embeddings', {"username":email, "dataname":data});
+        const answer = response.data.message; 
+        console.log(answer);
         const savedata = userdata({
             email, data
         });
         const storedate = await savedata.save();
-        res.status(200).json({storedate});
+        //res.status(200).json({storedate});
+        res.json({answer});
     }
     catch (error){
         res.status(400).json({error : "Error saving the link"});
@@ -43,9 +47,8 @@ exports.query = async (req, res) => {
         // Process your logic here
         
         //const answer = "hello";
-        const response = await axios.post('http://192.168.244.40:5100/getResponse', {username, query});
+        const response = await axios.post('http://0.0.0.0:5100/getResponse', {username, query});
         const answer = response.data.message; 
-        console.log(answer);
         console.log(answer);
         //res.end( JSON.stringify(answer.message) );
         res.json({answer});
@@ -64,5 +67,20 @@ exports.saveAns = async(req,res) =>{
     } catch (error) {
         console.error('Error saving answer:', error);
         res.status(500).json({ message: 'Error saving answer' });
+    }
+};
+
+exports.getAns = async(req,res) =>{
+    const {email} =  req.body;
+
+    try {
+        const users = await userAns.find({email});
+        if (users.length===0)
+            {
+                return res.status(400).send({ error: 'No users found with this email.' });
+            }
+        res.send(users);
+    } catch (error) {
+        res.status(400).send({ error: 'Server error.' });
     }
 };

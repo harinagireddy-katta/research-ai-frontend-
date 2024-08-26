@@ -1,7 +1,7 @@
 const users = require("../schema/userSchema");
 const userotp = require("../schema/userOtp");
 const nodemailer = require("nodemailer");
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 // email config
 const transporter = nodemailer.createTransport({

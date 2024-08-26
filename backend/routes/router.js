@@ -12,7 +12,7 @@ router.post("/savedata", datacon.UserData);
 router.post("/sendData", datacon.getData);
 router.post("/getRes", datacon.query);
 router.post("/saveAnswer", datacon.saveAns);
-
+router.post("/getAnswers",datacon.getAns);
 // Middleware setup
 router.use(fileUpload());
 
