@@ -5,8 +5,9 @@ import { Context } from "../../context/Context";
 import { useLogout } from "../login/logout";
 import { useAuthContext } from "../../reducer/useAuthContext";
 import { toast, ToastContainer } from 'react-toastify';
-import { getAnswer, saveAnswer } from '../../services/Apis'; 
+import { getAnswer, saveAnswer } from '../../services/Apis';
 import { uploadPdf, saveUserdata } from '../../services/Apis';
+import { ClipLoader } from 'react-spinners'; // Importing loading spinner
 
 const Dropdown = ({ handleLogoutClick }) => {
     const { user } = useAuthContext();
@@ -35,8 +36,9 @@ const Main = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [link, setLink] = useState("");
     const [mainInput, setMainInput] = useState("");
-    const [answer, setAnswer] = useState(""); 
-    const [qaList, setQaList] = useState([]); 
+    const [answer, setAnswer] = useState("");
+    const [qaList, setQaList] = useState([]);
+    const [loading, setLoading] = useState(false); // State to manage loading
 
     const handleLinkClick = () => {
         setIsModalOpen(true);
@@ -50,19 +52,21 @@ const Main = () => {
     const handleLinkSubmit = async (e) => {
         e.preventDefault();
         try {
+            setLoading(true); // Start loading
             const newdata = {
                 email: user.email,
                 data: link
             };
             const response = await saveUserdata(newdata);
-            console.log(response.data.answer);
             const newQa = { question: "summarize", answer: response.data.answer };
-            setQaList([...qaList, newQa]); 
-            setAnswer(response.data.answer); 
-           setShowResults(true); 
+            setQaList([...qaList, newQa]);
+            setAnswer(response.data.answer);
+            setShowResults(true);
             setIsModalOpen(false);
         } catch (error) {
             console.error('Error saving link', error);
+        } finally {
+            setLoading(false); // Stop loading
         }
     };
 
@@ -72,12 +76,15 @@ const Main = () => {
 
     const handleUpload = async () => {
         try {
+            setLoading(true); // Start loading
             const file = inpFileRef.current.files[0];
             const text = await uploadPdf(file);
             setExtractedText(text.trim());
             setResultText(text.trim());
         } catch (error) {
             console.error('Error uploading file:', error);
+        } finally {
+            setLoading(false); // Stop loading
         }
     };
 
@@ -91,22 +98,23 @@ const Main = () => {
 
     const handleSentClick = async (e) => {
         e.preventDefault();
-        console.log('Sent');
         if (mainInput === "") {
             toast.error("Enter the text");
-            return; 
+            return;
         }
         try {
-            const data = { username: "Sathvik", query: mainInput }; 
-            const response = await getAnswer(data); 
-            console.log(response.data.answer);
+            setLoading(true); // Start loading
+            const data = { username: user.email, query: mainInput };
+            const response = await getAnswer(data);
             const newQa = { question: mainInput, answer: response.data.answer };
-            setQaList([...qaList, newQa]); 
-            setAnswer(response.data.answer); 
-           setShowResults(true); 
-            setMainInput(""); 
+            setQaList([...qaList, newQa]);
+            setAnswer(response.data.answer);
+            setShowResults(true);
+            setMainInput("");
         } catch (error) {
             console.error('Error getting answer:', error.response ? error.response.data : error.message);
+        } finally {
+            setLoading(false); // Stop loading
         }
     };
 
@@ -114,7 +122,6 @@ const Main = () => {
         try {
             const response = await saveAnswer({
                 email: user.email,
-                // question: qa.question,
                 answer: qa.answer
             });
             toast.success('Answer saved successfully');
@@ -127,6 +134,39 @@ const Main = () => {
     const handleCardClick = (promptText) => {
         setMainInput(promptText);
     };
+
+    const formatText = (text) => {
+        // Handle bold headings (e.g., **Heading**)
+        text = text.replace(/(?:\*\*)(.*?)(?:\*\*)/g, '<h2>$1</h2>');
+        
+        // Handle italic subheadings (e.g., *Subheading*)
+        text = text.replace(/(?:\*)(.*?)(?:\*)/g, '<h3>$1</h3>');
+        
+        // Handle ordered lists (e.g., 1. Item)
+        text = text.replace(/(?:^|\n)(\d+)\.\s+(.*?)(?=\n\d+\.|\n\n|\n$)/g, (match, number, content) => {
+            return `<ol><li>${content}</li></ol>`;
+        });
+    
+        // Handle unordered lists (e.g., * Item)
+        text = text.replace(/(?:^|\n)\*\s+(.*?)(?=\n\*|\n\n|\n$)/g, (match, content) => {
+            return `<ul><li class="normal-text>${content}</li></ul>`;
+        });
+    
+        // Handle inline code (e.g., `code`)
+        text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+    
+        // Handle block code (e.g., ```code```)
+        text = text.replace(/```([^`]+)```/g, '<pre><code>$1</code></pre>');
+    
+        // Replace new lines with <br> tags for better formatting
+        text = text.replace(/\n/g, '<br />');
+    
+        // Handle plain paragraphs with custom styling
+        text = text.replace(/^(?!\*\*|\*|(\d+\.|\*)|`|```).*$/gm, '<p class="normal-text">$&</p>');
+    
+        return <div dangerouslySetInnerHTML={{ __html: text }} />;
+    };
+    
 
     return (
         <div className="main">
@@ -150,13 +190,15 @@ const Main = () => {
                                     <div className="result-title">
                                         <img src={assets.user} alt="User" />
                                         <p>Recent Prompt</p>
-                                        <p>{qa.question}</p> 
+                                        <p>{qa.question}</p>
                                     </div>
                                     <div className="result-data">
                                         <img src={assets.gemini_icon} alt="Gemini" />
-                                        
-                                        <p>{qa.answer}</p>
-                                        <button onClick={() => handleSaveClick(qa)}>Save</button> 
+                                        <div>
+                                            
+                                            {formatText(qa.answer)} {/* Format the answer */}
+                                        </div>
+                                        <button onClick={() => handleSaveClick(qa)}>Save</button>
                                     </div>
                                 </div>
                             ))}
@@ -201,6 +243,11 @@ const Main = () => {
                     </div>
                 </div>
             )}
+            {loading && ( // Display loading spinner when loading
+    <div className="loading-spinner">
+        <ClipLoader size={100} color="#36d7b7" />
+    </div>
+)}
             <ToastContainer />
         </div>
     );

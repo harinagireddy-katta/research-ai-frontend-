@@ -48,7 +48,7 @@ exports.query = async (req, res) => {
         // Process your logic here
         
         //const answer = "hello";
-        const response = await axios.post('http://0.0.0.0:5200/getResponse', {"username":"blabla@gmail.com", query});
+        const response = await axios.post('http://0.0.0.0:5200/getResponse', {username, query});
         const answer = response.data.message; 
         console.log(answer);
         //res.end( JSON.stringify(answer.message) );
